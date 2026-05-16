@@ -3,7 +3,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "视频会议助手",
+  title: "视频会议助手_MeetMate",
   description: "提升视频会议效率与体验",
 };
 
