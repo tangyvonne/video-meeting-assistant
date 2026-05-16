@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"f:/视频会议助手/prisma\" \"f:/视频会议助手/src/app\" \"f:/视频会议助手/src/components/ui\" \"f:/视频会议助手/src/components/layout\" \"f:/视频会议助手/src/components/meeting\" \"f:/视频会议助手/src/components/todo\" \"f:/视频会议助手/src/components/common\" \"f:/视频会议助手/src/lib\" \"f:/视频会议助手/src/app/api/meetings/[id]\" \"f:/视频会议助手/src/app/api/documents\" \"f:/视频会议助手/src/app/api/transcriptions\" \"f:/视频会议助手/src/app/api/todos\" \"f:/视频会议助手/src/app/api/minutes\" \"f:/视频会议助手/src/app/meeting/[id]/minutes\" \"f:/视频会议助手/src/app/todos\" \"f:/视频会议助手/public/uploads\")",
+      "Bash(npm install *)",
+      "Bash(wmic logicaldisk *)",
+      "Bash(cmd.exe /c \"wmic logicaldisk get caption,freespace,size\")",
+      "Bash(git config *)",
+      "Bash(gh auth *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ],
+    "additionalDirectories": [
+      "f:\\视频会议助手\\src\\app\\api\\meetings"
+    ]
+  }
+}

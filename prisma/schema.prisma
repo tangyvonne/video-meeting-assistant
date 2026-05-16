@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Meeting {
+  id        String   @id @default(uuid())
+  title     String
+  date      String
+  startTime String
+  endTime   String
+  duration  Int
+  host      String
+  attendees String
+  link      String?
+  platform  String   @default("other")
+  status    String   @default("upcoming")
+  agenda    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents      Document[]
+  transcriptions Transcription[]
+  todos          Todo[]
+  minutes        Minutes?
+}
+
+model Document {
+  id         String   @id @default(uuid())
+  meetingId  String
+  fileName   String
+  filePath   String
+  fileSize   Int
+  fileType   String
+  uploadedAt DateTime @default(now())
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Transcription {
+  id            String   @id @default(uuid())
+  meetingId     String
+  content       String
+  isHighlighted Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Todo {
+  id        String   @id @default(uuid())
+  meetingId String
+  content   String
+  assignee  String
+  dueDate   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
+
+model Minutes {
+  id         String   @id @default(uuid())
+  meetingId  String   @unique
+  summary    String?
+  highlights String?
+  content    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+}
