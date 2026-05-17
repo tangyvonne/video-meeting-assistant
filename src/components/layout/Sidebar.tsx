@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "会议列表", icon: CalendarIcon },
-  { href: "/files", label: "重要文件", icon: FolderIcon },
+  { href: "/files", label: "重要文件", icon: FolderIcon, id: "sidebar-files" },
   { href: "/todos", label: "待办事项", icon: CheckIcon, id: "sidebar-todos" },
 ];
 

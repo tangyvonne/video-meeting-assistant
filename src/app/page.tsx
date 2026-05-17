@@ -6,6 +6,7 @@ import { MeetingCard } from "@/components/meeting/MeetingCard";
 import { MeetingForm } from "@/components/meeting/MeetingForm";
 import { Button } from "@/components/ui/button";
 import { getMeetingGroup } from "@/lib/utils";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
 
 interface Meeting {
   id: string;
@@ -37,29 +38,6 @@ const groupColors: Record<string, string> = {
   missed: "border-l-red-400 bg-red-50/30",
 };
 
-// ============ 新手引导气泡 ============
-
-const guideSteps = [
-  {
-    target: "create-btn",
-    title: "从这里开始",
-    desc: "点击这里创建你的第一个会议，支持链接导入、一键解析会议信息。",
-    placement: "below",
-  },
-  {
-    target: "today-group",
-    title: "今日会议",
-    desc: "今天的会议会默认展开，其他分组点击标题栏可以展开或收起。",
-    placement: "below",
-  },
-  {
-    target: "sidebar-todos",
-    title: "待办总览",
-    desc: "所有会议的待办事项都在这里集中管理，支持筛选和导出 Excel。",
-    placement: "right",
-  },
-];
-
 export default function HomePage() {
   const router = useRouter();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -70,28 +48,6 @@ export default function HomePage() {
     past: true,
     missed: true,
   });
-  const [guideIndex, setGuideIndex] = useState(-1);
-
-  // 检查是否需要显示引导
-  useEffect(() => {
-    const seen = localStorage.getItem("meetmate_guide_seen");
-    if (!seen && !loading && meetings.length > 0) {
-      setGuideIndex(0);
-    }
-  }, [loading, meetings]);
-
-  const dismissGuide = () => {
-    localStorage.setItem("meetmate_guide_seen", "1");
-    setGuideIndex(-1);
-  };
-
-  const nextGuide = () => {
-    if (guideIndex < guideSteps.length - 1) {
-      setGuideIndex(guideIndex + 1);
-    } else {
-      dismissGuide();
-    }
-  };
 
   const fetchMeetings = useCallback(async () => {
     const res = await fetch("/api/meetings");
@@ -139,8 +95,6 @@ export default function HomePage() {
   }, {});
 
   const groupOrder = ["today", "missed", "future", "past"];
-
-  const guide = guideIndex >= 0 ? guideSteps[guideIndex] : null;
 
   return (
     <div>
@@ -192,7 +146,7 @@ export default function HomePage() {
                   </h2>
                 </button>
                 {!isCollapsed && (
-                  <div className="space-y-2">
+                  <div className="space-y-2" id={group === "today" ? "first-meeting-card" : undefined}>
                     {list.map((m) => (
                       <MeetingCard key={m.id} {...m} onDelete={handleDelete} />
                     ))}
@@ -211,37 +165,19 @@ export default function HomePage() {
         onParseLink={handleParseLink}
       />
 
-      {/* 新手引导气泡 */}
-      {guide && (
-        <div className="fixed inset-0 z-50 pointer-events-none">
-          <div className="absolute inset-0 bg-black/30 pointer-events-auto" onClick={dismissGuide} />
-          <div
-            className="absolute bg-white rounded-xl shadow-2xl border border-primary-200 p-5 w-72 pointer-events-auto animate-in fade-in zoom-in"
-            style={{
-              top: guide.target === "create-btn" ? "80px" : guide.target === "today-group" ? "165px" : "190px",
-              right: guide.target === "sidebar-todos" ? "auto" : "24px",
-              left: guide.target === "sidebar-todos" ? "218px" : "auto",
-            }}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-6 h-6 rounded-full bg-primary-600 text-white text-xs flex items-center justify-center font-bold">
-                {guideIndex + 1}
-              </span>
-              <span className="text-xs text-gray-400">{guideIndex + 1} / {guideSteps.length}</span>
-            </div>
-            <h3 className="font-semibold text-gray-900 mb-1">{guide.title}</h3>
-            <p className="text-sm text-gray-500 leading-relaxed">{guide.desc}</p>
-            <div className="flex justify-between items-center mt-4">
-              <button onClick={dismissGuide} className="text-xs text-gray-400 hover:text-gray-600">
-                跳过
-              </button>
-              <Button size="sm" onClick={nextGuide}>
-                {guideIndex < guideSteps.length - 1 ? "下一步" : "知道了"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <OnboardingGuide
+        stepRange={[0, 1]}
+        onNavigate={(nextStep) => {
+          // 第3步开始需要跳转到会议详情页
+          if (nextStep >= 2) {
+            const todayMeetings = grouped["today"] || [];
+            const firstMeeting = todayMeetings[0];
+            if (firstMeeting) {
+              router.push(`/meeting/${firstMeeting.id}?guide=1`);
+            }
+          }
+        }}
+      />
     </div>
   );
 }

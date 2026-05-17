@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabPanel } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import { getStatusLabel, getStatusColor, getPlatformLabel, getTodoStatusLabel, getTodoStatusColor } from "@/lib/utils";
+import { OnboardingGuide } from "@/components/OnboardingGuide";
 
 interface Meeting {
   id: string; title: string; date: string; startTime: string; endTime: string;
@@ -26,6 +28,7 @@ interface Minutes { id: string; meetingId: string; summary?: string | null; high
 export default function MeetingDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [activeTab, setActiveTab] = useState("pre");
   const [loading, setLoading] = useState(true);
@@ -56,6 +59,12 @@ export default function MeetingDetailPage() {
   }, [params.id]);
 
   useEffect(() => { fetchMeeting(); }, [fetchMeeting]);
+
+  const handleGuideStepChange = useCallback((step: number) => {
+    if (step === 2) setActiveTab("pre");
+    else if (step === 3) setActiveTab("in");
+    else if (step === 4) setActiveTab("post");
+  }, []);
 
   // ---- Pre-meeting ----
   const handleSaveAgenda = async () => {
@@ -213,7 +222,7 @@ export default function MeetingDetailPage() {
             </div>
 
             {/* Documents */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <div id="documents-section" className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-base font-semibold text-gray-900">相关资料</h2>
                 <label className="cursor-pointer inline-flex items-center justify-center rounded-lg font-medium transition-colors bg-primary-600 text-white hover:bg-primary-700 text-sm px-3 py-1.5">
@@ -272,7 +281,7 @@ export default function MeetingDetailPage() {
 
         {/* Tab 2: In-meeting */}
         <TabPanel data-tab="in">
-          <div className="space-y-6">
+          <div id="in-meeting-tab" className="space-y-6">
             {/* Transcription */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <h2 className="text-base font-semibold text-gray-900 mb-3">实时转写</h2>
@@ -349,7 +358,7 @@ export default function MeetingDetailPage() {
 
         {/* Tab 3: Post-meeting */}
         <TabPanel data-tab="post">
-          <div className="space-y-6">
+          <div id="post-meeting-tab" className="space-y-6">
             {/* Minutes */}
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-3">
@@ -410,6 +419,17 @@ export default function MeetingDetailPage() {
           </div>
         </form>
       </Dialog>
+
+      <OnboardingGuide
+        stepRange={[2, 6]}
+        onStepChange={handleGuideStepChange}
+        onNavigate={(nextStep) => {
+          if (nextStep > 6) {
+            // 引导全部完成，回到首页
+            router.push("/");
+          }
+        }}
+      />
     </div>
   );
 }
