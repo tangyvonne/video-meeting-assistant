@@ -19,6 +19,7 @@ interface Meeting {
   link?: string | null;
   platform: string;
   status: string;
+  isSample?: boolean;
   _count: { todos: number; documents: number };
 }
 
@@ -36,11 +37,61 @@ const groupColors: Record<string, string> = {
   missed: "border-l-red-400 bg-red-50/30",
 };
 
+// ============ 新手引导气泡 ============
+
+const guideSteps = [
+  {
+    target: "create-btn",
+    title: "从这里开始",
+    desc: "点击这里创建你的第一个会议，支持链接导入、一键解析会议信息。",
+    placement: "below",
+  },
+  {
+    target: "today-group",
+    title: "今日会议",
+    desc: "今天的会议会默认展开，其他分组点击标题栏可以展开或收起。",
+    placement: "below",
+  },
+  {
+    target: "sidebar-todos",
+    title: "待办总览",
+    desc: "所有会议的待办事项都在这里集中管理，支持筛选和导出 Excel。",
+    placement: "right",
+  },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
+    future: true,
+    past: true,
+    missed: true,
+  });
+  const [guideIndex, setGuideIndex] = useState(-1);
+
+  // 检查是否需要显示引导
+  useEffect(() => {
+    const seen = localStorage.getItem("meetmate_guide_seen");
+    if (!seen && !loading && meetings.length > 0) {
+      setGuideIndex(0);
+    }
+  }, [loading, meetings]);
+
+  const dismissGuide = () => {
+    localStorage.setItem("meetmate_guide_seen", "1");
+    setGuideIndex(-1);
+  };
+
+  const nextGuide = () => {
+    if (guideIndex < guideSteps.length - 1) {
+      setGuideIndex(guideIndex + 1);
+    } else {
+      dismissGuide();
+    }
+  };
 
   const fetchMeetings = useCallback(async () => {
     const res = await fetch("/api/meetings");
@@ -71,6 +122,15 @@ export default function HomePage() {
     return json.data || null;
   };
 
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/meetings/${id}`, { method: "DELETE" });
+    fetchMeetings();
+  };
+
+  const toggleGroup = (group: string) => {
+    setCollapsed((prev) => ({ ...prev, [group]: !prev[group] }));
+  };
+
   const grouped = meetings.reduce((acc: Record<string, Meeting[]>, m) => {
     const group = getMeetingGroup(m.date, m.status);
     if (!acc[group]) acc[group] = [];
@@ -80,6 +140,8 @@ export default function HomePage() {
 
   const groupOrder = ["today", "missed", "future", "past"];
 
+  const guide = guideIndex >= 0 ? guideSteps[guideIndex] : null;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -87,7 +149,7 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-gray-900">会议列表</h1>
           <p className="text-sm text-gray-500 mt-1">管理和追踪你的所有视频会议</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2" id="create-btn">
           <Button onClick={() => setShowForm(true)}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -111,19 +173,31 @@ export default function HomePage() {
           {groupOrder.map((group) => {
             const list = grouped[group];
             if (!list || list.length === 0) return null;
+            const isCollapsed = !!collapsed[group];
             return (
-              <div key={group}>
-                <div className={`border-l-4 rounded-l px-3 py-1 mb-3 ${groupColors[group] || ""}`}>
+              <div key={group} id={group === "today" ? "today-group" : undefined}>
+                <button
+                  onClick={() => toggleGroup(group)}
+                  className={`w-full flex items-center gap-2 border-l-4 rounded-l px-3 py-1 mb-3 transition-colors hover:bg-gray-50 ${groupColors[group] || ""}`}
+                >
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
                   <h2 className="text-sm font-semibold text-gray-700">
                     {groupLabels[group] || group}
                     <span className="ml-2 text-gray-400 font-normal">({list.length})</span>
                   </h2>
-                </div>
-                <div className="space-y-2">
-                  {list.map((m) => (
-                    <MeetingCard key={m.id} {...m} />
-                  ))}
-                </div>
+                </button>
+                {!isCollapsed && (
+                  <div className="space-y-2">
+                    {list.map((m) => (
+                      <MeetingCard key={m.id} {...m} onDelete={handleDelete} />
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -136,6 +210,38 @@ export default function HomePage() {
         onSave={handleCreate}
         onParseLink={handleParseLink}
       />
+
+      {/* 新手引导气泡 */}
+      {guide && (
+        <div className="fixed inset-0 z-50 pointer-events-none">
+          <div className="absolute inset-0 bg-black/30 pointer-events-auto" onClick={dismissGuide} />
+          <div
+            className="absolute bg-white rounded-xl shadow-2xl border border-primary-200 p-5 w-72 pointer-events-auto animate-in fade-in zoom-in"
+            style={{
+              top: guide.target === "create-btn" ? "80px" : guide.target === "today-group" ? "165px" : "190px",
+              right: guide.target === "sidebar-todos" ? "auto" : "24px",
+              left: guide.target === "sidebar-todos" ? "218px" : "auto",
+            }}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <span className="w-6 h-6 rounded-full bg-primary-600 text-white text-xs flex items-center justify-center font-bold">
+                {guideIndex + 1}
+              </span>
+              <span className="text-xs text-gray-400">{guideIndex + 1} / {guideSteps.length}</span>
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-1">{guide.title}</h3>
+            <p className="text-sm text-gray-500 leading-relaxed">{guide.desc}</p>
+            <div className="flex justify-between items-center mt-4">
+              <button onClick={dismissGuide} className="text-xs text-gray-400 hover:text-gray-600">
+                跳过
+              </button>
+              <Button size="sm" onClick={nextGuide}>
+                {guideIndex < guideSteps.length - 1 ? "下一步" : "知道了"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

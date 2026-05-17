@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "会议列表", icon: CalendarIcon },
-  { href: "/todos", label: "待办事项", icon: CheckIcon },
+  { href: "/todos", label: "待办事项", icon: CheckIcon, id: "sidebar-todos" },
 ];
 
 export function Sidebar() {
@@ -34,6 +34,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              id={item.id}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                 isActive

@@ -19,6 +19,7 @@ model Meeting {
   link      String?
   platform  String   @default("other")
   status    String   @default("upcoming")
+  isSample  Boolean  @default(false)
   agenda    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -9,14 +9,13 @@ function today(offset = 0): string {
 }
 
 async function main() {
-  // 先检查是否已有数据，有就跳过，避免重复播种
   const count = await db.meeting.count();
   if (count > 0) {
     console.log("已有数据，跳过播种");
     return;
   }
 
-  // --- 今日会议 ---
+  // ==================== 示例会议 1：今日 ====================
   const m1 = await db.meeting.create({
     data: {
       title: "Q2 产品评审会议",
@@ -29,6 +28,7 @@ async function main() {
       link: "https://meeting.tencent.com/dm/example1",
       platform: "tencent",
       status: "upcoming",
+      isSample: true,
       agenda: "1. 需求评审\n2. 原型演示\n3. 排期确认",
     },
   });
@@ -40,7 +40,36 @@ async function main() {
     ],
   });
 
-  // --- 未来会议 ---
+  // ==================== 示例会议 2：今日（新增） ====================
+  const m5 = await db.meeting.create({
+    data: {
+      title: "网站设计评审",
+      date: today(0),
+      startTime: "14:00",
+      endTime: "15:00",
+      duration: 60,
+      host: "李四",
+      attendees: "张三,王五,设计师小陈",
+      link: "https://meeting.tencent.com/dm/example5",
+      platform: "tencent",
+      status: "upcoming",
+      isSample: true,
+      agenda: "1. 首页改版方案\n2. 配色优化\n3. 移动端适配",
+    },
+  });
+
+  await db.document.create({
+    data: { meetingId: m5.id, fileName: "首页改版设计稿.pdf", filePath: "/uploads/dev/sample-design.pdf", fileSize: 350000, fileType: "application/pdf" },
+  });
+
+  await db.todo.createMany({
+    data: [
+      { meetingId: m5.id, content: "收集首页反馈意见", assignee: "设计师小陈", dueDate: today(2), status: "in_progress" },
+      { meetingId: m5.id, content: "更新组件库配色", assignee: "王五", dueDate: today(3), status: "pending" },
+    ],
+  });
+
+  // ==================== 示例会议 3：未来 ====================
   const m2 = await db.meeting.create({
     data: {
       title: "技术架构升级方案讨论",
@@ -53,6 +82,7 @@ async function main() {
       link: "https://meeting.bytedance.com/example2",
       platform: "feishu",
       status: "upcoming",
+      isSample: true,
       agenda: "1. 当前架构痛点\n2. 升级方案对比\n3. 迁移计划",
     },
   });
@@ -61,7 +91,7 @@ async function main() {
     data: { meetingId: m2.id, fileName: "架构升级方案.pptx", filePath: "/uploads/dev/sample.pptx", fileSize: 512000, fileType: "application/vnd.openxmlformats-officedocument.presentationml.presentation" },
   });
 
-  // --- 已逾期 ---
+  // ==================== 示例会议 4：已逾期 ====================
   const m3 = await db.meeting.create({
     data: {
       title: "周进度同步会",
@@ -74,11 +104,12 @@ async function main() {
       link: "https://meeting.dingtalk.com/example3",
       platform: "dingtalk",
       status: "missed",
+      isSample: true,
       agenda: "1. 上周进度回顾\n2. 本周计划对齐",
     },
   });
 
-  // --- 已完成 ---
+  // ==================== 示例会议 5：已完成 ====================
   const m4 = await db.meeting.create({
     data: {
       title: "客户需求沟通会",
@@ -91,11 +122,11 @@ async function main() {
       link: "https://meeting.tencent.com/dm/example4",
       platform: "tencent",
       status: "completed",
+      isSample: true,
       agenda: "1. 客户需求概述\n2. 可行性分析\n3. 下一步行动\n4. 时间节点确认",
     },
   });
 
-  // 转写记录
   await db.transcription.createMany({
     data: [
       { meetingId: m4.id, content: "客户提出了三个核心需求：报表导出、权限管理、移动端适配", isHighlighted: true },
@@ -107,7 +138,6 @@ async function main() {
     ],
   });
 
-  // 待办
   await db.todo.createMany({
     data: [
       { meetingId: m4.id, content: "输出完整技术方案文档", assignee: "张三", dueDate: today(3), status: "in_progress" },
@@ -120,7 +150,6 @@ async function main() {
     ],
   });
 
-  // 纪要
   await db.minutes.create({
     data: {
       meetingId: m4.id,
@@ -152,7 +181,7 @@ async function main() {
     },
   });
 
-  console.log("示例数据播种完成！");
+  console.log("示例数据播种完成！共创建 5 个示例会议");
 }
 
 main()
