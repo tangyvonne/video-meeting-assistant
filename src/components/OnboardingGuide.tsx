@@ -26,24 +26,6 @@ const allSteps: Omit<GuideStep, "step" | "total">[] = [
     style: { top: "130px", left: "276px" },
   },
   {
-    target: "documents-section",
-    title: "会前准备",
-    desc: "在这里上传会议资料，一键转存到重要文件区，方便以后查找。",
-    style: { top: "360px", left: "280px" },
-  },
-  {
-    target: "in-meeting-tab",
-    title: "会中助手",
-    desc: "开会时记下重点内容并高亮，随时添加待办事项，指派负责人和截止日期。",
-    style: { bottom: "60px", right: "40px" },
-  },
-  {
-    target: "post-meeting-tab",
-    title: "会后跟进",
-    desc: "结束会议后自动生成纪要，汇总所有重点内容和待办事项，一目了然。",
-    style: { top: "220px", left: "280px" },
-  },
-  {
     target: "sidebar-files",
     title: "重要文件区",
     desc: "会议资料集中存放。可以建文件夹、直接上传，从会议转存的文件会标注来源。",
@@ -54,6 +36,24 @@ const allSteps: Omit<GuideStep, "step" | "total">[] = [
     title: "待办总览",
     desc: "所有会议的待办都在这里。按状态筛选、修改进度、一键导出 Excel。",
     style: { top: "196px", left: "218px" },
+  },
+  {
+    target: "documents-section",
+    title: "会前准备",
+    desc: "在这里上传会议资料，一键转存到重要文件区，方便以后查找。",
+    style: { top: "360px", left: "280px" },
+  },
+  {
+    target: "in-meeting-tab",
+    title: "会中助手",
+    desc: "开会时记下重点内容并高亮，随时添加待办事项，指派负责人和截止日期。",
+    style: { top: "50%", left: "50%", transform: "translate(-50%, -50%)" },
+  },
+  {
+    target: "post-meeting-tab",
+    title: "会后跟进",
+    desc: "结束会议后自动生成纪要，汇总所有重点内容和待办事项，一目了然。",
+    style: { top: "50%", left: "50%", transform: "translate(-50%, -50%)" },
   },
 ];
 

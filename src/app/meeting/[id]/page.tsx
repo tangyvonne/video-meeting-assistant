@@ -61,9 +61,9 @@ export default function MeetingDetailPage() {
   useEffect(() => { fetchMeeting(); }, [fetchMeeting]);
 
   const handleGuideStepChange = useCallback((step: number) => {
-    if (step === 2) setActiveTab("pre");
-    else if (step === 3) setActiveTab("in");
-    else if (step === 4) setActiveTab("post");
+    if (step === 4) setActiveTab("pre");
+    else if (step === 5) setActiveTab("in");
+    else if (step === 6) setActiveTab("post");
   }, []);
 
   // ---- Pre-meeting ----
@@ -421,7 +421,7 @@ export default function MeetingDetailPage() {
       </Dialog>
 
       <OnboardingGuide
-        stepRange={[2, 6]}
+        stepRange={[4, 6]}
         onStepChange={handleGuideStepChange}
         onNavigate={(nextStep) => {
           if (nextStep > 6) {

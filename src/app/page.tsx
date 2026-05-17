@@ -166,10 +166,10 @@ export default function HomePage() {
       />
 
       <OnboardingGuide
-        stepRange={[0, 1]}
+        stepRange={[0, 3]}
         onNavigate={(nextStep) => {
-          // 第3步开始需要跳转到会议详情页
-          if (nextStep >= 2) {
+          // 第5步开始需要跳转到会议详情页
+          if (nextStep >= 4) {
             const todayMeetings = grouped["today"] || [];
             const firstMeeting = todayMeetings[0];
             if (firstMeeting) {
