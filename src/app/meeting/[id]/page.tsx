@@ -233,9 +233,35 @@ export default function MeetingDetailPage() {
                         <span className="text-sm text-gray-700">{doc.fileName}</span>
                         <span className="text-xs text-gray-400">({(doc.fileSize / 1024).toFixed(1)} KB)</span>
                       </div>
-                      <a href={doc.filePath} download={doc.fileName} className="text-primary-600 text-sm hover:underline">
-                        下载
-                      </a>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={async () => {
+                            const btn = document.getElementById(`star-btn-${doc.id}`);
+                            if (btn) { btn.textContent = "转存中..."; (btn as HTMLButtonElement).disabled = true; }
+                            try {
+                              await fetch("/api/favorite-files", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  sourceDocumentId: doc.id,
+                                  meetingTitle: meeting.title,
+                                  meetingId: meeting.id,
+                                }),
+                              });
+                              if (btn) btn.textContent = "已转存";
+                            } catch {
+                              if (btn) { btn.textContent = "转存失败"; (btn as HTMLButtonElement).disabled = false; }
+                            }
+                          }}
+                          id={`star-btn-${doc.id}`}
+                          className="text-xs text-primary-600 hover:text-primary-700 hover:bg-primary-50 px-2 py-1 rounded transition-colors"
+                        >
+                          转存至重要文件
+                        </button>
+                        <a href={doc.filePath} download={doc.fileName} className="text-primary-600 text-sm hover:underline">
+                          下载
+                        </a>
+                      </div>
                     </div>
                   ))}
                 </div>

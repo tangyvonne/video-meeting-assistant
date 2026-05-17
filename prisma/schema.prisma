@@ -76,3 +76,23 @@ model Minutes {
 
   meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 }
+
+model Folder {
+  id        String         @id @default(uuid())
+  name      String
+  createdAt DateTime       @default(now())
+  files     FavoriteFile[]
+}
+
+model FavoriteFile {
+  id              String   @id @default(uuid())
+  fileName        String
+  filePath        String
+  fileSize        Int
+  fileType        String
+  sourceTitle     String?
+  sourceMeetingId String?
+  folderId        String?
+  folder          Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+}
